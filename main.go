@@ -111,7 +111,7 @@ func loadCities(userInput UserInput) {
 	defer csvFile.Close()
 
 	csvFileReader	:= csv.NewReader(csvFile)
-	mmDbWriter		:= initMmdbWriter(userInput.fileType, userInput.ipVersion, 28)
+	mmDbWriter		:= initMmdbWriter(userInput.fileType, userInput.ipVersion, 24)
 
 	fmt.Printf("Loading MMDB City ipv%d data from: %s\n", userInput.ipVersion, userInput.inputPath)
 
@@ -120,18 +120,20 @@ func loadCities(userInput UserInput) {
 		if err != nil {
 			break
 		}
-		//lat, _ := strconv.ParseFloat(record[7], 64)
-		//lon, _ := strconv.ParseFloat(record[8], 64)
 
 		mmdbRowData := mmdbtype.Map{
 			"city":			mmdbtype.String(record[5]),
 			"postcode":		mmdbtype.String(record[6]),
 			"timezone":		mmdbtype.String(record[9]),
 			"country_code":	mmdbtype.String(record[2]),
-			"latitude":		mmdbtype.String(record[7]),
-			"longitude":	mmdbtype.String(record[8]),
 			"state1":		mmdbtype.String(record[3]),
 			"state2":		mmdbtype.String(record[4]),
+		}
+		if record[7] != "" && record[8] != "" {
+			lat, _ := strconv.ParseFloat(record[7], 32)
+			lon, _ := strconv.ParseFloat(record[8], 32)
+			mmdbRowData["latitude"] = mmdbtype.Float32(lat)
+			mmdbRowData["longitude"] = mmdbtype.Float32(lon)
 		}
 
 		ipRanges := findIPRanges(record[0], record[1])
